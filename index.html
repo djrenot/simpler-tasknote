@@ -8,44 +8,55 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      font-size: 14px;
-      background: #f5f5f5;
-      color: #222;
+      font-family: "Menlo", "Monaco", "Courier New", monospace;
+      font-size: 13px;
+      background: #f5f2eb;
+      color: #1a1a1a;
       min-height: 100vh;
-      padding: 24px 16px;
+      padding: 32px 20px;
     }
 
     header {
       max-width: 1000px;
-      margin: 0 auto 16px;
+      margin: 0 auto 4px;
       display: flex;
       align-items: center;
-      gap: 16px;
+      justify-content: space-between;
+    }
+
+    .header-bar {
+      max-width: 1000px;
+      margin: 0 auto;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+      padding: 6px 0;
+      margin-bottom: 16px;
     }
 
     h1 {
-      font-size: 18px;
-      font-weight: 600;
+      font-size: 13px;
+      font-weight: bold;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
     }
 
     button.add-btn {
-      padding: 5px 14px;
-      background: #4a7cf7;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
+      padding: 3px 10px;
+      background: transparent;
+      color: #1a1a1a;
+      border: 1px solid #1a1a1a;
       cursor: pointer;
-      font-size: 14px;
+      font-size: 12px;
+      font-family: inherit;
+      letter-spacing: 0.04em;
     }
-    button.add-btn:hover { background: #3a6ce0; }
+    button.add-btn:hover { background: #1a1a1a; color: #f5f2eb; }
 
     .table-wrap {
       max-width: 1000px;
       margin: 0 auto;
-      background: #fff;
-      border: 1px solid #ddd;
-      border-radius: 6px;
+      background: #faf8f3;
+      border: 1px solid #1a1a1a;
       overflow: hidden;
     }
 
@@ -55,56 +66,71 @@
       table-layout: fixed;
     }
 
-    col.col-drag   { width: 28px; }
-    col.col-id     { width: 72px; }
+    col.col-drag   { width: 24px; }
+    col.col-done   { width: 36px; }
+    col.col-id     { width: 60px; }
     col.col-name   { width: auto; }
-    col.col-dead   { width: 130px; }
+    col.col-dead   { width: 120px; }
     col.col-memo   { width: 260px; }
-    col.col-del    { width: 36px; }
+    col.col-del    { width: 32px; }
 
     thead th {
-      background: #f0f0f0;
-      padding: 8px 6px;
+      background: #1a1a1a;
+      color: #f5f2eb;
+      padding: 6px 8px;
       text-align: left;
-      font-weight: 600;
-      border-bottom: 2px solid #ddd;
+      font-weight: normal;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border-right: 1px solid #333;
       user-select: none;
       white-space: nowrap;
     }
+    thead th:last-child { border-right: none; }
     thead th.sortable { cursor: pointer; }
-    thead th.sortable:hover { background: #e4e4e4; }
-    thead th .sort-arrow { margin-left: 4px; color: #888; font-size: 11px; }
-    thead th.sorted .sort-arrow { color: #4a7cf7; }
+    thead th.sortable:hover { background: #333; }
+    thead th .sort-arrow { margin-left: 4px; opacity: 0.5; }
+    thead th.sorted .sort-arrow { opacity: 1; }
 
     tbody tr {
-      border-bottom: 1px solid #eee;
-      transition: background 0.1s;
+      border-bottom: 1px solid #d8d3c8;
     }
     tbody tr:last-child { border-bottom: none; }
-    tbody tr:hover { background: #fafafa; }
-    tbody tr.drag-over { background: #e8f0fe; }
-    tbody tr.dragging  { opacity: 0.4; }
+    tbody tr:hover { background: #ede9e0; }
+    tbody tr.drag-over { background: #e0dbd0; outline: 1px dashed #888; outline-offset: -1px; }
+    tbody tr.dragging  { opacity: 0.35; }
 
     td {
-      padding: 4px 4px;
+      padding: 2px 4px;
       vertical-align: middle;
+      border-right: 1px solid #d8d3c8;
     }
+    td:last-child { border-right: none; }
 
     .drag-handle {
       cursor: grab;
       color: #bbb;
       text-align: center;
-      font-size: 16px;
+      font-size: 11px;
       padding: 4px 2px;
       user-select: none;
+      letter-spacing: -1px;
     }
+    .drag-handle:hover { color: #666; }
     .drag-handle:active { cursor: grabbing; }
 
     .cell-id {
-      color: #888;
       text-align: right;
-      padding-right: 10px;
+      padding-right: 4px;
+    }
+    .cell-id input {
+      color: #999;
+      text-align: right;
+      font-size: 11px;
       font-variant-numeric: tabular-nums;
+      width: 100%;
+      padding: 4px 6px;
     }
 
     td input[type="text"],
@@ -114,57 +140,141 @@
       border: 1px solid transparent;
       background: transparent;
       padding: 4px 6px;
-      font-size: 14px;
+      font-size: 13px;
       font-family: inherit;
       color: inherit;
-      border-radius: 3px;
       outline: none;
       resize: none;
     }
     td input[type="text"]:focus,
     td input[type="date"]:focus,
     td textarea:focus {
-      border-color: #4a7cf7;
+      border-color: #888;
       background: #fff;
     }
     td textarea {
       min-height: 28px;
       line-height: 1.4;
       overflow: hidden;
+      color: #555;
     }
 
     .del-btn {
       background: none;
       border: none;
-      color: #ccc;
+      color: #bbb;
       cursor: pointer;
-      font-size: 16px;
+      font-size: 14px;
+      font-family: inherit;
       padding: 4px 6px;
-      border-radius: 3px;
       display: block;
       margin: 0 auto;
+      line-height: 1;
     }
-    .del-btn:hover { color: #e55; background: #fee; }
+    .del-btn:hover { color: #1a1a1a; }
+
+    .tick-btn {
+      background: none;
+      border: none;
+      font-family: inherit;
+      font-size: 12px;
+      cursor: pointer;
+      color: #999;
+      padding: 4px 4px;
+      display: block;
+      margin: 0 auto;
+      letter-spacing: -0.5px;
+      white-space: nowrap;
+    }
+    .tick-btn:hover { color: #1a1a1a; }
+
+    tbody tr.done td { opacity: 0.45; }
+    tbody tr.done td input,
+    tbody tr.done td textarea { text-decoration: line-through; }
+
+    .input-error { border-color: #c0392b !important; background: #fff5f5 !important; }
 
     .empty-msg {
       text-align: center;
-      color: #aaa;
-      padding: 40px 0;
-      font-size: 13px;
+      color: #999;
+      padding: 48px 0;
+      font-size: 12px;
+      letter-spacing: 0.06em;
     }
+
+    .dialog-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(245,242,235,0.7);
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+    .dialog-overlay.open { display: flex; }
+
+    .dialog-box {
+      background: #faf8f3;
+      border: 1px solid #1a1a1a;
+      padding: 20px 24px;
+      min-width: 260px;
+      font-family: inherit;
+    }
+    .dialog-box p {
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      margin-bottom: 16px;
+      color: #1a1a1a;
+    }
+    .dialog-box p::before {
+      content: '> ';
+      color: #999;
+    }
+    .dialog-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+    .dialog-actions button {
+      padding: 3px 14px;
+      font-size: 12px;
+      font-family: inherit;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      border: 1px solid #1a1a1a;
+      background: transparent;
+      color: #1a1a1a;
+    }
+    .dialog-actions button.btn-yes {
+      background: #1a1a1a;
+      color: #f5f2eb;
+    }
+    .dialog-actions button:hover { opacity: 0.7; }
   </style>
 </head>
 <body>
 
+<div class="dialog-overlay" id="dialog-overlay">
+  <div class="dialog-box">
+    <p id="dialog-msg">このタスクを削除しますか?</p>
+    <div class="dialog-actions">
+      <button onclick="dialogResolve(false)">NO</button>
+      <button class="btn-yes" onclick="dialogResolve(true)">YES</button>
+    </div>
+  </div>
+</div>
+
 <header>
   <h1>タスク管理</h1>
-  <button class="add-btn" onclick="addTask()">＋ タスクを追加</button>
+  <button class="add-btn" onclick="addTask()">+ タスクを追加</button>
 </header>
+<div class="header-bar"></div>
 
 <div class="table-wrap">
   <table>
     <colgroup>
       <col class="col-drag">
+      <col class="col-done">
       <col class="col-id">
       <col class="col-name">
       <col class="col-dead">
@@ -174,7 +284,8 @@
     <thead>
       <tr>
         <th></th>
-        <th class="sortable" onclick="sortBy('id')">
+        <th></th>
+        <th class="sortable" onclick="sortBy('num')">
           No <span class="sort-arrow">↕</span>
         </th>
         <th class="sortable" onclick="sortBy('name')">
@@ -197,13 +308,13 @@
 <script>
   // ── State ──────────────────────────────────────────────
   let tasks = [];
-  let nextId = 1;
+  let nextKey = 1;
   let sortCol = null;
   let sortDir = 1; // 1=asc, -1=desc
 
   // ── Persistence ────────────────────────────────────────
   function save() {
-    localStorage.setItem('tasknote', JSON.stringify({ tasks, nextId }));
+    localStorage.setItem('tasknote', JSON.stringify({ tasks, nextKey }));
   }
 
   function load() {
@@ -211,8 +322,16 @@
       const raw = localStorage.getItem('tasknote');
       if (!raw) return;
       const data = JSON.parse(raw);
-      tasks  = data.tasks  || [];
-      nextId = data.nextId || 1;
+      // migrate old format: id → _key + num
+      tasks = (data.tasks || []).map(t => ({
+        _key: t._key ?? t.id ?? nextKey++,
+        num:  t.num  ?? t.id ?? '',
+        name: t.name ?? '',
+        deadline: (t.deadline ?? '').replace(/^\d{4}-/, ''),
+        memo: t.memo ?? '',
+        done: t.done ?? false,
+      }));
+      nextKey = data.nextKey ?? data.nextId ?? (tasks.length + 1);
     } catch (_) {}
   }
 
@@ -226,20 +345,28 @@
 
     tasks.forEach((task, idx) => {
       const tr = document.createElement('tr');
-      tr.dataset.id = task.id;
+      tr.dataset.key = task._key;
       tr.draggable = true;
+
+      if (task.done) tr.classList.add('done');
 
       tr.innerHTML = `
         <td class="drag-handle" title="ドラッグで並び替え">⠿</td>
-        <td class="cell-id">${task.id}</td>
+        <td><button class="tick-btn" onclick="toggleDone(${task._key})">${task.done ? '[x]' : '[&nbsp;]'}</button></td>
+        <td class="cell-id"><input type="text" inputmode="numeric" maxlength="4"
+              value="${esc(task.num)}"
+              onchange="update(${task._key},'num',this.value.replace(/[^0-9]/g,'').slice(0,4))"
+              oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4)"></td>
         <td><input type="text"  value="${esc(task.name)}"     placeholder="タスク名"
-              onchange="update(${task.id},'name',this.value)"></td>
-        <td><input type="date"  value="${esc(task.deadline)}"
-              onchange="update(${task.id},'deadline',this.value)"></td>
+              onchange="update(${task._key},'name',this.value)"></td>
+        <td><input type="text" inputmode="numeric" maxlength="5" placeholder="MM-DD"
+              value="${esc(task.deadline)}"
+              oninput="fmtDate(this)"
+              onchange="validateDate(this,${task._key})"></td>
         <td><textarea rows="1"  placeholder="メモ"
-              onchange="update(${task.id},'memo',this.value)"
+              onchange="update(${task._key},'memo',this.value)"
               oninput="autoResize(this)">${esc(task.memo)}</textarea></td>
-        <td><button class="del-btn" onclick="deleteTask(${task.id})" title="削除">×</button></td>
+        <td><button class="del-btn" onclick="deleteTask(${task._key})" title="削除">×</button></td>
       `;
 
       attachDnD(tr, idx);
@@ -256,7 +383,7 @@
       arrow.textContent = '↕';
     });
     if (sortCol) {
-      const cols = ['id','name','deadline','memo'];
+      const cols = ['num', 'name', 'deadline', 'memo'];
       const idx  = cols.indexOf(sortCol) + 1; // +1 for drag col
       const th   = document.querySelectorAll('thead th.sortable')[cols.indexOf(sortCol)];
       if (th) {
@@ -268,10 +395,9 @@
 
   // ── Task ops ───────────────────────────────────────────
   function addTask() {
-    tasks.push({ id: nextId++, name: '', deadline: '', memo: '' });
+    tasks.push({ _key: nextKey++, num: '', name: '', deadline: '', memo: '', done: false });
     save();
     render();
-    // focus the name input of the new row
     const rows = document.querySelectorAll('#task-body tr');
     if (rows.length) {
       const input = rows[rows.length - 1].querySelector('input[type="text"]');
@@ -279,13 +405,36 @@
     }
   }
 
-  function update(id, field, value) {
-    const task = tasks.find(t => t.id === id);
+  function update(key, field, value) {
+    const task = tasks.find(t => t._key === key);
     if (task) { task[field] = value; save(); }
   }
 
-  function deleteTask(id) {
-    tasks = tasks.filter(t => t.id !== id);
+  function toggleDone(key) {
+    const task = tasks.find(t => t._key === key);
+    if (!task) return;
+    task.done = !task.done;
+    save();
+    render();
+  }
+
+  let dialogResolve = null;
+
+  function showDialog(msg) {
+    document.getElementById('dialog-msg').textContent = msg;
+    document.getElementById('dialog-overlay').classList.add('open');
+    return new Promise(resolve => {
+      dialogResolve = (result) => {
+        document.getElementById('dialog-overlay').classList.remove('open');
+        resolve(result);
+      };
+    });
+  }
+
+  async function deleteTask(key) {
+    const ok = await showDialog('このタスクを削除しますか?');
+    if (!ok) return;
+    tasks = tasks.filter(t => t._key !== key);
     save();
     render();
   }
@@ -340,6 +489,30 @@
   // ── Helpers ────────────────────────────────────────────
   function esc(str) {
     return String(str ?? '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function fmtDate(el) {
+    const digits = el.value.replace(/\D/g, '').slice(0, 4);
+    el.value = digits.length > 2 ? digits.slice(0,2) + '-' + digits.slice(2) : digits;
+    el.classList.remove('input-error');
+  }
+
+  function validateDate(el, key) {
+    const val = el.value.trim();
+    if (val === '') {
+      el.classList.remove('input-error');
+      update(key, 'deadline', '');
+      return;
+    }
+    const m = val.match(/^(\d{2})-(\d{2})$/);
+    const mo = m && parseInt(m[1], 10);
+    const dy = m && parseInt(m[2], 10);
+    if (!m || mo < 1 || mo > 12 || dy < 1 || dy > 31) {
+      el.classList.add('input-error');
+      return;
+    }
+    el.classList.remove('input-error');
+    update(key, 'deadline', val);
   }
 
   function autoResize(el) {
