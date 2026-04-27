@@ -45,10 +45,10 @@ button.lang-btn {
   display: flex;
   align-items: center;
   gap: 4px;
+  line-height: 1.5;
 
   .material-symbols-outlined {
     font-size: 15px;
-    line-height: 1;
     font-variation-settings: 'wght' 300;
   }
 
@@ -64,6 +64,7 @@ button.add-btn {
   font-size: 12px;
   font-family: inherit;
   letter-spacing: 0.04em;
+  line-height: 1.5;
 
   &:hover { background: #1a1a1a; color: #f5f2eb; }
 }
