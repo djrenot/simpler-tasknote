@@ -70,7 +70,7 @@
     col.col-done   { width: 36px; }
     col.col-id     { width: 60px; }
     col.col-name   { width: auto; }
-    col.col-dead   { width: 120px; }
+    col.col-dead   { width: 140px; }
     col.col-memo   { width: 260px; }
     col.col-del    { width: 32px; }
 
@@ -192,7 +192,56 @@
     tbody tr.done td input,
     tbody tr.done td textarea { text-decoration: line-through; }
 
+    tbody tr.overdue .task-name { color: #c0392b; font-weight: 600; }
+
     .input-error { border-color: #c0392b !important; background: #fff5f5 !important; }
+
+    .date-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .date-wrap input[type="text"] { flex: 1; }
+    .date-hidden {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+      width: 0;
+      height: 0;
+    }
+    .date-icon {
+      background: none;
+      border: none;
+      font-family: inherit;
+      font-size: 11px;
+      color: #bbb;
+      cursor: pointer;
+      padding: 0 4px;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+    .date-icon:hover { color: #1a1a1a; }
+
+    footer {
+      max-width: 1000px;
+      margin: 12px auto 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .footer-right { display: flex; gap: 16px; }
+
+    .clear-btn {
+      background: none;
+      border: none;
+      font-family: inherit;
+      font-size: 11px;
+      color: #aaa;
+      cursor: pointer;
+      letter-spacing: 0.04em;
+      padding: 4px 0;
+    }
+    .clear-btn:hover { color: #c0392b; }
 
     .empty-msg {
       text-align: center;
@@ -305,12 +354,24 @@
   <div id="empty-msg" class="empty-msg" style="display:none">タスクがありません。「＋ タスクを追加」で追加してください。</div>
 </div>
 
+<footer>
+  <div style="display:flex;gap:16px">
+    <button class="clear-btn" id="copy-btn" onclick="copyList()">⎘ copy list</button>
+    <button class="clear-btn" id="copy-done-btn" onclick="copyDone()">⎘ copy done</button>
+  </div>
+  <div class="footer-right">
+    <button class="clear-btn" onclick="clearDone()">✓ clear done</button>
+    <button class="clear-btn" onclick="clearAll()">✕ clear all</button>
+  </div>
+</footer>
+
 <script>
   // ── State ──────────────────────────────────────────────
   let tasks = [];
   let nextKey = 1;
   let sortCol = null;
   let sortDir = 1; // 1=asc, -1=desc
+  const today = new Date().toISOString().slice(0, 10);
 
   // ── Persistence ────────────────────────────────────────
   function save() {
@@ -327,11 +388,12 @@
         _key: t._key ?? t.id ?? nextKey++,
         num:  t.num  ?? t.id ?? '',
         name: t.name ?? '',
-        deadline: (t.deadline ?? '').replace(/^\d{4}-/, ''),
+        deadline: /^\d{4}-\d{2}-\d{2}$/.test(t.deadline) ? t.deadline : '',
         memo: t.memo ?? '',
         done: t.done ?? false,
       }));
       nextKey = data.nextKey ?? data.nextId ?? (tasks.length + 1);
+      tasks = tasks.filter(t => t.num || t.name || t.deadline || t.memo);
     } catch (_) {}
   }
 
@@ -349,6 +411,7 @@
       tr.draggable = true;
 
       if (task.done) tr.classList.add('done');
+      if (!task.done && task.deadline && task.deadline < today) tr.classList.add('overdue');
 
       tr.innerHTML = `
         <td class="drag-handle" title="ドラッグで並び替え">⠿</td>
@@ -357,12 +420,19 @@
               value="${esc(task.num)}"
               onchange="update(${task._key},'num',this.value.replace(/[^0-9]/g,'').slice(0,4))"
               oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4)"></td>
-        <td><input type="text"  value="${esc(task.name)}"     placeholder="タスク名"
+        <td><input type="text" class="task-name" value="${esc(task.name)}" placeholder="タスク名"
               onchange="update(${task._key},'name',this.value)"></td>
-        <td><input type="text" inputmode="numeric" maxlength="5" placeholder="MM-DD"
-              value="${esc(task.deadline)}"
-              oninput="fmtDate(this)"
-              onchange="validateDate(this,${task._key})"></td>
+        <td><div class="date-wrap">
+              <input type="text" inputmode="numeric" maxlength="8" placeholder="YY-MM-DD"
+                value="${esc(toDisplayDate(task.deadline))}"
+                oninput="fmtDateYY(this)"
+                onchange="validateDateYY(this,${task._key})">
+              <input type="date" class="date-hidden"
+                value="${esc(task.deadline)}"
+                onchange="syncFromPicker(this,${task._key})">
+              <button class="date-icon" tabindex="-1"
+                onclick="this.previousElementSibling.showPicker()">▾</button>
+            </div></td>
         <td><textarea rows="1"  placeholder="メモ"
               onchange="update(${task._key},'memo',this.value)"
               oninput="autoResize(this)">${esc(task.memo)}</textarea></td>
@@ -431,6 +501,46 @@
     });
   }
 
+  function flashBtn(btn, msg, reset) {
+    btn.textContent = msg;
+    setTimeout(() => btn.textContent = reset, 1500);
+  }
+
+  async function copyList() {
+    const btn = document.getElementById('copy-btn');
+    if (tasks.length === 0) { flashBtn(btn, '— nothing to copy', '⎘ copy list'); return; }
+    const lines = tasks.map(t => '- ' + (t.name || ''));
+    await navigator.clipboard.writeText(lines.join('\n'));
+    flashBtn(btn, '✓ copied!', '⎘ copy list');
+  }
+
+  async function copyDone() {
+    const btn = document.getElementById('copy-done-btn');
+    const done = tasks.filter(t => t.done);
+    if (done.length === 0) { flashBtn(btn, '— nothing to copy', '⎘ copy done'); return; }
+    const lines = done.map(t => '- ' + (t.name || ''));
+    await navigator.clipboard.writeText(lines.join('\n'));
+    flashBtn(btn, '✓ copied!', '⎘ copy done');
+  }
+
+  async function clearDone() {
+    if (!tasks.some(t => t.done)) return;
+    const ok = await showDialog('完了済みタスクを削除しますか?');
+    if (!ok) return;
+    tasks = tasks.filter(t => !t.done);
+    save();
+    render();
+  }
+
+  async function clearAll() {
+    if (tasks.length === 0) return;
+    const ok = await showDialog('全タスクを削除しますか?');
+    if (!ok) return;
+    tasks = [];
+    save();
+    render();
+  }
+
   async function deleteTask(key) {
     const ok = await showDialog('このタスクを削除しますか?');
     if (!ok) return;
@@ -491,28 +601,50 @@
     return String(str ?? '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 
-  function fmtDate(el) {
-    const digits = el.value.replace(/\D/g, '').slice(0, 4);
-    el.value = digits.length > 2 ? digits.slice(0,2) + '-' + digits.slice(2) : digits;
+  function toDisplayDate(iso) {
+    const m = iso && iso.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    return m ? m[1].slice(2) + '-' + m[2] + '-' + m[3] : '';
+  }
+
+  function toISODate(display) {
+    const m = display && display.match(/^(\d{2})-(\d{2})-(\d{2})$/);
+    return m ? '20' + m[1] + '-' + m[2] + '-' + m[3] : '';
+  }
+
+  function fmtDateYY(el) {
+    const d = el.value.replace(/\D/g, '').slice(0, 6);
+    if (d.length > 4)      el.value = d.slice(0,2) + '-' + d.slice(2,4) + '-' + d.slice(4);
+    else if (d.length > 2) el.value = d.slice(0,2) + '-' + d.slice(2);
+    else                   el.value = d;
     el.classList.remove('input-error');
   }
 
-  function validateDate(el, key) {
+  function validateDateYY(el, key) {
     const val = el.value.trim();
     if (val === '') {
       el.classList.remove('input-error');
+      el.nextElementSibling.value = '';
       update(key, 'deadline', '');
       return;
     }
-    const m = val.match(/^(\d{2})-(\d{2})$/);
-    const mo = m && parseInt(m[1], 10);
-    const dy = m && parseInt(m[2], 10);
+    const m = val.match(/^(\d{2})-(\d{2})-(\d{2})$/);
+    const mo = m && parseInt(m[2], 10);
+    const dy = m && parseInt(m[3], 10);
     if (!m || mo < 1 || mo > 12 || dy < 1 || dy > 31) {
       el.classList.add('input-error');
       return;
     }
     el.classList.remove('input-error');
-    update(key, 'deadline', val);
+    const iso = toISODate(val);
+    el.nextElementSibling.value = iso;
+    update(key, 'deadline', iso);
+  }
+
+  function syncFromPicker(pickerEl, key) {
+    const iso = pickerEl.value;
+    pickerEl.previousElementSibling.value = toDisplayDate(iso);
+    pickerEl.previousElementSibling.classList.remove('input-error');
+    update(key, 'deadline', iso);
   }
 
   function autoResize(el) {
