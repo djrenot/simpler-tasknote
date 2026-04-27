@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600&family=Sawarabi+Gothic&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
@@ -22,8 +23,11 @@
 </div>
 
 <header>
-  <h1>Simpler Tasknote</h1>
-  <button class="add-btn" onclick="addTask()">+ タスクを追加</button>
+  <div style="display:flex;gap:10px;align-items:center">
+    <h1>Simpler Tasknote</h1>
+    <button class="lang-btn" id="lang-btn" onclick="switchLang()"><span class="material-symbols-outlined">language</span><span id="lang-label">EN</span></button>
+  </div>
+  <button class="add-btn" onclick="addTask()" data-i18n="addTask">+ タスクを追加</button>
 </header>
 
 <div class="table-wrap">
@@ -45,20 +49,20 @@
           No <span class="sort-arrow">↕</span>
         </th>
         <th class="sortable" onclick="sortBy('name')">
-          タスク名 <span class="sort-arrow">↕</span>
+          <span data-i18n="colTask">タスク名</span><span class="sort-arrow">↕</span>
         </th>
         <th class="sortable" onclick="sortBy('deadline')">
-          期限 <span class="sort-arrow">↕</span>
+          <span data-i18n="colDeadline">期限</span><span class="sort-arrow">↕</span>
         </th>
         <th class="sortable" onclick="sortBy('memo')">
-          メモ <span class="sort-arrow">↕</span>
+          <span data-i18n="colMemo">メモ</span><span class="sort-arrow">↕</span>
         </th>
         <th></th>
       </tr>
     </thead>
     <tbody id="task-body"></tbody>
   </table>
-  <div id="empty-msg" class="empty-msg" style="display:none">タスクがありません。「＋ タスクを追加」で追加してください。</div>
+  <div id="empty-msg" class="empty-msg" style="display:none" data-i18n="emptyMsg">タスクがありません。「＋ タスクを追加」で追加してください。</div>
 </div>
 
 <footer>

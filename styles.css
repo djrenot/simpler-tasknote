@@ -37,6 +37,29 @@ h1 {
   text-transform: uppercase;
 }
 
+button.lang-btn {
+  padding: 3px 8px;
+  background: transparent;
+  color: #1a1a1a;
+  border: 1px solid #1a1a1a;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+button.lang-btn .material-symbols-outlined {
+  font-size: 15px;
+  line-height: 1;
+  font-variation-settings: "wght" 300;
+}
+button.lang-btn:hover {
+  background: #1a1a1a;
+  color: #f5f2eb;
+}
+
 button.add-btn {
   padding: 3px 10px;
   background: transparent;
@@ -104,9 +127,7 @@ thead th {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   border-right: 1px solid #333;
-  -webkit-user-select: none;
-     -moz-user-select: none;
-          user-select: none;
+  user-select: none;
   white-space: nowrap;
 }
 thead th:last-child {
@@ -119,7 +140,7 @@ thead th.sortable:hover {
   background: #333;
 }
 thead th .sort-arrow {
-  margin-left: 4px;
+  margin-left: 3px;
   opacity: 0.5;
 }
 thead th.sorted .sort-arrow {
@@ -194,9 +215,7 @@ td textarea {
   text-align: center;
   font-size: 11px;
   padding: 4px 2px;
-  -webkit-user-select: none;
-     -moz-user-select: none;
-          user-select: none;
+  user-select: none;
   letter-spacing: -1px;
 }
 .drag-handle:hover {
@@ -376,4 +395,6 @@ footer {
 }
 .dialog-actions button:hover {
   opacity: 0.7;
-}/*# sourceMappingURL=styles.css.map */
+}
+
+/*# sourceMappingURL=styles.css.map */

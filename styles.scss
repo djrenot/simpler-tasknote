@@ -33,6 +33,28 @@ h1 {
   text-transform: uppercase;
 }
 
+button.lang-btn {
+  padding: 3px 8px;
+  background: transparent;
+  color: #1a1a1a;
+  border: 1px solid #1a1a1a;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: inherit;
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  .material-symbols-outlined {
+    font-size: 15px;
+    line-height: 1;
+    font-variation-settings: 'wght' 300;
+  }
+
+  &:hover { background: #1a1a1a; color: #f5f2eb; }
+}
+
 button.add-btn {
   padding: 3px 10px;
   background: transparent;
@@ -86,7 +108,7 @@ thead th {
   &.sortable { cursor: pointer; }
   &.sortable:hover { background: #333; }
 
-  .sort-arrow { margin-left: 4px; opacity: 0.5; }
+  .sort-arrow { margin-left: 3px; opacity: 0.5; }
   &.sorted .sort-arrow { opacity: 1; }
 }
 

@@ -1,3 +1,54 @@
+// ── i18n ───────────────────────────────────────────────
+const i18n = {
+  ja: {
+    addTask: '+ タスクを追加',
+    colTask: 'タスク名',
+    colDeadline: '期限',
+    colMemo: 'メモ',
+    emptyMsg: 'タスクがありません。「＋ タスクを追加」で追加してください。',
+    placeholderTask: 'タスク名',
+    placeholderMemo: 'メモ',
+    dragTitle: 'ドラッグで並び替え',
+    delTitle: '削除',
+    dlgDelete: 'このタスクを削除しますか?',
+    dlgClearDone: '完了済みタスクを削除しますか?',
+    dlgClearAll: '全タスクを削除しますか?',
+  },
+  en: {
+    addTask: '+ add task',
+    colTask: 'task',
+    colDeadline: 'deadline',
+    colMemo: 'remarks',
+    emptyMsg: 'No tasks. Click "+ add task" to get started.',
+    placeholderTask: 'task name',
+    placeholderMemo: 'remarks',
+    dragTitle: 'drag to reorder',
+    delTitle: 'delete',
+    dlgDelete: 'Delete this task?',
+    dlgClearDone: 'Delete completed tasks?',
+    dlgClearAll: 'Delete all tasks?',
+  },
+};
+
+let lang = localStorage.getItem('tasknote-lang') || 'ja';
+
+function t(key) { return i18n[lang][key] ?? key; }
+
+function applyLang() {
+  document.querySelectorAll('[data-i18n]').forEach((el) => {
+    el.textContent = t(el.dataset.i18n);
+  });
+  const label = document.getElementById('lang-label');
+  if (label) label.textContent = lang === 'ja' ? 'EN' : 'JA';
+  document.documentElement.lang = lang;
+}
+
+function switchLang() {
+  lang = lang === 'ja' ? 'en' : 'ja';
+  localStorage.setItem('tasknote-lang', lang);
+  render();
+}
+
 // ── State ──────────────────────────────────────────────
 let tasks = [];
 let nextKey = 1;
@@ -34,6 +85,7 @@ function render() {
   const tbody = document.getElementById('task-body');
   const emptyMsg = document.getElementById('empty-msg');
 
+  applyLang();
   emptyMsg.style.display = tasks.length === 0 ? '' : 'none';
   tbody.innerHTML = '';
 
@@ -46,13 +98,13 @@ function render() {
     if (!task.done && task.deadline && task.deadline < today) tr.classList.add('overdue');
 
     tr.innerHTML = `
-        <td class="drag-handle" title="ドラッグで並び替え">⠿</td>
+        <td class="drag-handle" title="${t('dragTitle')}">⠿</td>
         <td><button class="tick-btn" onclick="toggleDone(${task._key})">${task.done ? '[x]' : '[&nbsp;]'}</button></td>
         <td class="cell-id"><input type="text" inputmode="numeric" maxlength="4"
               value="${esc(task.num)}"
               onchange="update(${task._key},'num',this.value.replace(/[^0-9]/g,'').slice(0,4))"
               oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4)"></td>
-        <td><input type="text" class="task-name" value="${esc(task.name)}" placeholder="タスク名"
+        <td><input type="text" class="task-name" value="${esc(task.name)}" placeholder="${t('placeholderTask')}"
               onchange="update(${task._key},'name',this.value)"></td>
         <td><div class="date-wrap">
               <input type="text" inputmode="numeric" maxlength="8" placeholder="YY-MM-DD"
@@ -65,10 +117,10 @@ function render() {
               <button class="date-icon" tabindex="-1"
                 onclick="this.previousElementSibling.showPicker()">▾</button>
             </div></td>
-        <td><textarea rows="1"  placeholder="メモ"
+        <td><textarea rows="1" placeholder="${t('placeholderMemo')}"
               onchange="update(${task._key},'memo',this.value)"
               oninput="autoResize(this)">${esc(task.memo)}</textarea></td>
-        <td><button class="del-btn" onclick="deleteTask(${task._key})" title="削除">×</button></td>
+        <td><button class="del-btn" onclick="deleteTask(${task._key})" title="${t('delTitle')}">×</button></td>
       `;
 
     attachDnD(tr, idx);
@@ -170,7 +222,7 @@ async function copyDone() {
 
 async function clearDone() {
   if (!tasks.some((t) => t.done)) return;
-  const ok = await showDialog('完了済みタスクを削除しますか?');
+  const ok = await showDialog(t('dlgClearDone'));
   if (!ok) return;
   tasks = tasks.filter((t) => !t.done);
   save();
@@ -179,7 +231,7 @@ async function clearDone() {
 
 async function clearAll() {
   if (tasks.length === 0) return;
-  const ok = await showDialog('全タスクを削除しますか?');
+  const ok = await showDialog(t('dlgClearAll'));
   if (!ok) return;
   tasks = [];
   save();
@@ -187,7 +239,7 @@ async function clearAll() {
 }
 
 async function deleteTask(key) {
-  const ok = await showDialog('このタスクを削除しますか?');
+  const ok = await showDialog(t('dlgDelete'));
   if (!ok) return;
   tasks = tasks.filter((t) => t._key !== key);
   save();
@@ -323,4 +375,5 @@ Object.assign(window, {
   validateDateYY,
   syncFromPicker,
   autoResize,
+  switchLang,
 });
