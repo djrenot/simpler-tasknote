@@ -100,7 +100,7 @@ function render() {
     tr.innerHTML = `
         <td class="drag-handle" title="${t('dragTitle')}">⠿</td>
         <td><button class="tick-btn" onclick="toggleDone(${task._key})">${task.done ? '[x]' : '[&nbsp;]'}</button></td>
-        <td class="cell-id"><input type="text" inputmode="numeric" maxlength="4"
+        <td class="cell-id"><input type="text" inputmode="numeric" maxlength="4"  placeholder="No."
               value="${esc(task.num)}"
               onchange="update(${task._key},'num',this.value.replace(/[^0-9]/g,'').slice(0,4))"
               oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,4)"></td>
