@@ -92,7 +92,6 @@ function render() {
   tasks.forEach((task, idx) => {
     const tr = document.createElement('tr');
     tr.dataset.key = task._key;
-    tr.draggable = true;
 
     if (task.done) tr.classList.add('done');
     if (!task.done && task.deadline && task.deadline < today) tr.classList.add('overdue');
@@ -269,12 +268,20 @@ function sortBy(col) {
 let dragIdx = null;
 
 function attachDnD(tr, idx) {
+  // Only enable HTML5 drag from the handle so inputs/textareas keep text selection
+  tr.addEventListener('mousedown', (e) => {
+    tr.draggable = !!e.target.closest('.drag-handle');
+  });
+  tr.addEventListener('mouseup', () => {
+    tr.draggable = false;
+  });
   tr.addEventListener('dragstart', (e) => {
     dragIdx = idx;
     tr.classList.add('dragging');
     e.dataTransfer.effectAllowed = 'move';
   });
   tr.addEventListener('dragend', () => {
+    tr.draggable = false;
     tr.classList.remove('dragging');
     document.querySelectorAll('#task-body tr').forEach((r) => r.classList.remove('drag-over'));
   });
