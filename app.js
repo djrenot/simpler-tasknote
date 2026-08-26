@@ -152,7 +152,7 @@ function addTask() {
   render();
   const rows = document.querySelectorAll('#task-body tr');
   if (rows.length) {
-    const input = rows[rows.length - 1].querySelector('input[type="text"]');
+    const input = rows[rows.length - 1].querySelector('input.task-name');
     if (input) input.focus();
   }
 }
@@ -363,9 +363,148 @@ function autoResize(el) {
   el.style.height = el.scrollHeight + 'px';
 }
 
+// Backlog copy is a rich link: text/plain is often just the URL (so the No. field
+// kept only digits). Title lives in text/html — parse that first.
+const ISSUE_KEY_RE = /([A-Za-z][A-Za-z0-9_]*)-(\d+)/;
+
+function normalizePaste(text) {
+  return String(text ?? '')
+    .replace(/\u00a0/g, ' ')
+    .replace(/[\u200b\u200c\u200d\ufeff]/g, '')
+    .replace(/\r\n/g, '\n')
+    .trim();
+}
+
+function isBareIssueKey(text) {
+  return /^[A-Za-z][A-Za-z0-9_]*-\d+$/.test(normalizePaste(text));
+}
+
+function parseBacklogPaste(text) {
+  const cleaned = normalizePaste(text);
+  if (!cleaned) return null;
+
+  const viewM = cleaned.match(/\/view\/([A-Za-z][A-Za-z0-9_]*)-(\d+)/i);
+  const keyM = cleaned.match(ISSUE_KEY_RE);
+  if (!viewM && !keyM) return null;
+
+  const project = (viewM || keyM)[1];
+  const num = (viewM || keyM)[2];
+  const issueKey = `${project}-${num}`;
+
+  const name = cleaned
+    .replace(/https?:\/\/[^\s<>"']+/gi, ' ')
+    .replace(new RegExp(issueKey.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  if (!name) return null;
+  return { num: num.slice(0, 4), name };
+}
+
+function parseBacklogHtml(html) {
+  const raw = String(html ?? '').trim();
+  if (!raw) return null;
+
+  let doc;
+  try {
+    doc = new DOMParser().parseFromString(raw, 'text/html');
+  } catch (_) {
+    return null;
+  }
+
+  const titles = [];
+  let num = '';
+
+  for (const a of doc.querySelectorAll('a[href]')) {
+    const href = a.getAttribute('href') || '';
+    const hrefM = href.match(/\/view\/([A-Za-z][A-Za-z0-9_]*)-(\d+)/i)
+      || href.match(ISSUE_KEY_RE);
+    const text = normalizePaste((a.textContent || '').replace(/\s+/g, ' '));
+    if (hrefM && !num) num = hrefM[2];
+    if (!text || isBareIssueKey(text)) continue;
+    const stripped = text.replace(/^[A-Za-z][A-Za-z0-9_]*-\d+\s*/, '').trim();
+    if (stripped) titles.push(stripped);
+  }
+
+  if (num && titles.length) return { num: num.slice(0, 4), name: titles[0] };
+  return parseBacklogPaste(doc.body ? doc.body.textContent : '');
+}
+
+function parseBacklogClipboard(e) {
+  const html = e.clipboardData?.getData('text/html') || '';
+  const fromHtml = parseBacklogHtml(html);
+  if (fromHtml) return fromHtml;
+  const plain = e.clipboardData?.getData('text/plain')
+    || e.clipboardData?.getData('text')
+    || '';
+  return parseBacklogPaste(plain);
+}
+
+function looksLikeBacklogClipboard(e) {
+  const plain = e.clipboardData?.getData('text/plain') || '';
+  const html = e.clipboardData?.getData('text/html') || '';
+  const blob = plain + '\n' + html;
+  return /\/view\/[A-Za-z][A-Za-z0-9_]*-\d+/i.test(blob)
+    || ISSUE_KEY_RE.test(plain)
+    || /backlog\.(jp|com|tool)/i.test(blob);
+}
+
+async function readClipboardHtml() {
+  try {
+    if (!navigator.clipboard?.read) return '';
+    const items = await navigator.clipboard.read();
+    for (const item of items) {
+      if (item.types.includes('text/html')) {
+        return await (await item.getType('text/html')).text();
+      }
+    }
+  } catch (_) {}
+  return '';
+}
+
+function applyBacklogPaste(parsed, tr) {
+  const key = Number(tr?.dataset.key);
+  const task = tasks.find((t) => t._key === key);
+  if (!task) return;
+  task.num = parsed.num;
+  task.name = parsed.name;
+  save();
+  const numInput = tr.querySelector('.cell-id input');
+  const nameInput = tr.querySelector('input.task-name');
+  if (numInput) numInput.value = parsed.num;
+  if (nameInput) nameInput.value = parsed.name;
+}
+
+function onTaskPaste(e) {
+  const field = e.target.closest('.cell-id input, input.task-name');
+  if (!field) return;
+  const tr = field.closest('tr');
+  const parsed = parseBacklogClipboard(e);
+  if (parsed) {
+    e.preventDefault();
+    applyBacklogPaste(parsed, tr);
+    return;
+  }
+  // <input> paste events often omit text/html; Backlog's title is in the rich link.
+  if (!looksLikeBacklogClipboard(e)) return;
+  const plain = e.clipboardData?.getData('text/plain') || '';
+  e.preventDefault();
+  readClipboardHtml().then((html) => {
+    const fromHtml = parseBacklogHtml(html) || parseBacklogPaste(plain);
+    if (fromHtml) {
+      applyBacklogPaste(fromHtml, tr);
+      return;
+    }
+    const m = plain.match(/\/view\/[A-Za-z][A-Za-z0-9_]*-(\d+)/i)
+      || plain.match(/[A-Za-z][A-Za-z0-9_]*-(\d+)/);
+    if (m) applyBacklogPaste({ num: m[1].slice(0, 4), name: '' }, tr);
+  });
+}
+
 // ── Init ───────────────────────────────────────────────
 load();
 render();
+document.getElementById('task-body').addEventListener('paste', onTaskPaste, true);
 
 // Make sure inline onclick handlers can call these.
 Object.assign(window, {
