@@ -110,7 +110,7 @@ function render() {
                 value="${esc(toDisplayDate(task.deadline))}"
                 oninput="fmtDateYY(this)"
                 onchange="validateDateYY(this,${task._key})">
-              <input type="date" class="date-hidden"
+              <input type="date" class="date-hidden" tabindex="-1"
                 value="${esc(task.deadline)}"
                 onchange="syncFromPicker(this,${task._key})">
               <button class="date-icon" tabindex="-1"
