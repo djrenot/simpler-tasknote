@@ -196,13 +196,19 @@ function flashBtn(btn, msg, reset) {
   setTimeout(() => (btn.textContent = reset), 1500);
 }
 
+function formatTaskLine(task) {
+  const name = '- ' + (task.name || '');
+  const memo = (task.memo || '').replace(/\s+/g, ' ').trim();
+  return memo ? name + '\n  - ' + memo : name;
+}
+
 async function copyList() {
   const btn = document.getElementById('copy-btn');
   if (tasks.length === 0) {
     flashBtn(btn, '— nothing to copy', '⎘ copy list');
     return;
   }
-  const lines = tasks.map((t) => '- ' + (t.name || ''));
+  const lines = tasks.map(formatTaskLine);
   await navigator.clipboard.writeText(lines.join('\n'));
   flashBtn(btn, '✓ copied!', '⎘ copy list');
 }
@@ -214,7 +220,7 @@ async function copyDone() {
     flashBtn(btn, '— nothing to copy', '⎘ copy done');
     return;
   }
-  const lines = done.map((t) => '- ' + (t.name || ''));
+  const lines = done.map(formatTaskLine);
   await navigator.clipboard.writeText(lines.join('\n'));
   flashBtn(btn, '✓ copied!', '⎘ copy done');
 }
